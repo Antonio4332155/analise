@@ -195,23 +195,6 @@ function construirSVG() {
   o.push('<rect x="40" y="' + (ly - 6) + '" width="38" height="5" fill="#111"/><rect x="40" y="' + (ly + 2) + '" width="38" height="5" fill="#7d776b"/>');
   o.push(T(88, ly + 4, 'faixa superior de cada painel: barra preta = região; barra cinza = sexo (valores escritos nas pontas)', 11, 400, TXT2));
 
-  // esquema de leitura de um painel (comprimentos iguais: não são dados)
-  const ex = 1130, ey = 104;
-  o.push(T(ex, ey, 'ESQUEMA DE LEITURA (comprimentos iguais, não são dados)', 11, 700));
-  o.push('<rect x="' + (ex + 20) + '" y="' + (ey + 6) + '" width="80" height="62" fill="' + LADO_H + '"/><rect x="' + (ex + 100) + '" y="' + (ey + 6) + '" width="80" height="62" fill="' + LADO_M + '"/>');
-  o.push('<rect x="' + (ex + 40) + '" y="' + (ey + 18) + '" width="120" height="48" fill="' + VERDE + '" stroke="' + TXT + '" stroke-width=".8"/>');
-  const ang = [['Branca', 0], ['Parda', 1], ['Preta', 2]];
-  ang.forEach(([n, i]) => {
-    o.push('<rect x="' + (ex + 50) + '" y="' + (ey + 21 + i * 5) + '" width="100" height="4" fill="' + COR_BARRA[n] + '" stroke="' + (n === 'Branca' ? '#555' : 'none') + '" stroke-width=".6"/>');
-    o.push(T(ex + 190, ey + 25 + i * 5, n, 8.5, 400, TXT2));
-  });
-  VERMELHOS.forEach((c, i) => o.push('<rect x="' + (ex + 50) + '" y="' + (ey + 38 + i * 5.4) + '" width="100" height="4.2" fill="' + c + '"/>'));
-  o.push(T(ex + 190, ey + 52, 'faixas etárias (14–17 … 60+)', 8.5, 400, TXT2));
-  o.push('<rect x="' + (ex + 20) + '" y="' + (ey + 7) + '" width="160" height="4" fill="#111"/><rect x="' + (ex + 20) + '" y="' + (ey + 12.5) + '" width="160" height="3" fill="#7d776b" opacity=".0"/>');
-  o.push(T(ex + 190, ey + 12, 'região / sexo (topo)', 8.5, 400, TXT2));
-  o.push('<line x1="' + (ex + 100) + '" x2="' + (ex + 100) + '" y1="' + (ey + 2) + '" y2="' + (ey + 72) + '" stroke="#222" stroke-width="1.4"/>');
-  o.push(T(ex + 100, ey + 84, 'Homens ◄  ► Mulheres', 9, 400, TXT2, 'middle'));
-
   // cabeçalho: anos
   const yH = G.headTop;
   ANOS.forEach((a, i) => {
