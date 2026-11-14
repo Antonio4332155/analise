@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Gráfico espelhado: desocupação por região e ano (razão com o Brasil)</title>
+<title>Desemprego por Características da População</title>
 <style>
   :root { --bg:#faf7f2; --ink:#1f1d1a; --mut:#6b6459; --line:#e3ddd0; --acc:#2f6b4f; }
   * { box-sizing: border-box; }
@@ -34,7 +34,7 @@
 </head>
 <body>
 <header>
-  <h1>Desocupação no Brasil, 2016–2024: gráfico espelhado por região e ano</h1>
+  <h1>Desemprego por Características da População</h1>
   <div class="botoes">
     <button id="b-ajustar" aria-pressed="true">Ajustar à largura</button>
     <button id="b-100" aria-pressed="false">100%</button>
@@ -159,11 +159,11 @@ function construirSVG() {
     '" height="' + h + '" fill="' + fill + '"' + (stroke ? ' stroke="' + stroke + '" stroke-width=".6"' : '') + (dash ? ' stroke-dasharray="1.8 1.3"' : '') + '/></g>';
 
   o.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + largura + '" height="' + altura + '" viewBox="0 0 ' + largura + ' ' + altura +
-    '" font-family="' + FONTE + '" role="img" aria-label="Gráfico espelhado da desocupação por região e ano">');
-  o.push('<title>Desocupação por região, escolaridade, faixa etária, cor ou raça e sexo, 2016–2024 (razão com o Brasil)</title>');
+    '" font-family="' + FONTE + '" role="img" aria-label="Desemprego por Características da População">');
+  o.push('<title>Desemprego por Características da População</title>');
   o.push('<rect width="' + largura + '" height="' + altura + '" fill="' + BG + '"/>');
 
-  o.push(T(40, 46, 'Desocupação no Brasil, 2016–2024: razão com a taxa nacional por região, escolaridade, faixa etária, cor ou raça e sexo', 22, 700));
+  o.push(T(40, 46, 'Desemprego por Características da População', 22, 700));
   o.push(T(40, 70, '1,0× = taxa de desocupação do Brasil no ano (linha tracejada). Esquerda do eixo = Homens, direita = Mulheres, mesma escala em todos os painéis.', 11.5, 400, TXT2));
 
   // legenda
