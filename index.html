@@ -14,13 +14,6 @@
   button { font:inherit; border:1px solid #b9b2a3; background:#fff; color:var(--ink); padding:5px 12px; border-radius:4px; cursor:pointer; }
   button:hover { border-color:var(--acc); }
   button[aria-pressed="true"] { background:#e3f3ea; border-color:var(--acc); font-weight:700; }
-  #modos { display:flex; gap:0; }
-  #modos button { border-radius:0; }
-  #modos button:first-child { border-radius:4px 0 0 4px; }
-  #modos button:last-child { border-radius:0 4px 4px 0; border-left:0; }
-  #aviso { padding:8px 20px; font-size:13px; }
-  #aviso.combinado { background:#fff3d6; color:#6b4e00; }
-  #aviso.direto { background:#e3f3ea; color:#1b5e3a; }
   #barra { position:sticky; top:0; z-index:5; background:var(--bg); border-bottom:1px solid var(--line); padding:8px 20px; display:flex; flex-wrap:wrap; gap:8px 22px; align-items:center; }
   #barra .grupo { display:flex; flex-wrap:wrap; gap:4px 6px; align-items:center; }
   #barra .rot { font-size:11px; font-weight:700; letter-spacing:.04em; color:var(--mut); margin-right:2px; }
@@ -43,10 +36,6 @@
 <header>
   <h1>Desocupação no Brasil, 2016–2024: gráfico espelhado por região e ano</h1>
   <div class="botoes">
-    <div id="modos" role="group" aria-label="Modo dos valores">
-      <button id="m-combinado" aria-pressed="true">Índice combinado (modelo)</button>
-      <button id="m-direto" aria-pressed="false">Valores diretos</button>
-    </div>
     <button id="b-ajustar" aria-pressed="true">Ajustar à largura</button>
     <button id="b-100" aria-pressed="false">100%</button>
     <button id="b-200" aria-pressed="false">200%</button>
@@ -54,7 +43,6 @@
     <button id="b-pdf">Salvar PDF</button>
   </div>
 </header>
-<div id="aviso"></div>
 <div id="barra">
   <div class="grupo" id="g-cores"><span class="rot">COR OU RAÇA</span></div>
   <div class="grupo" id="g-faixas"><span class="rot">FAIXA ETÁRIA</span></div>
@@ -120,17 +108,17 @@ const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(
 const f2 = v => v.toFixed(2).replace('.', ',');
 const n1 = v => Math.round(v * 100) / 100;
 
-function valores(modo) {
+function valores() {
   // devolve função que entrega os valores de cada elemento
   return {
-    banda: (r, a, e, s) => modo === 'combinado' ? HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a] : HEAT.esc[e][a],
-    cor: (r, a, e, s, c) => modo === 'combinado' ? HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a] * HEAT.cor[CORES[c]][a] : HEAT.cor[CORES[c]][a],
-    faixa: (r, a, e, s, f) => modo === 'combinado' ? HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a] * HEAT.faixa[f][a] : HEAT.faixa[f][a]
+    banda: (r, a, e, s) => HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a],
+    cor: (r, a, e, s, c) => HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a] * HEAT.cor[CORES[c]][a],
+    faixa: (r, a, e, s, f) => HEAT.reg[REGIOES[r]][a] * HEAT.esc[e][a] * HEAT.sexo[s][a] * HEAT.faixa[f][a]
   };
 }
 
-function maximo(modo) {
-  const v = valores(modo); let m = 0;
+function maximo() {
+  const v = valores(); let m = 0;
   for (let r = 0; r < 5; r++) for (let a = 0; a < 9; a++) for (let e = 0; e < 7; e++) for (let s = 0; s < 2; s++) {
     m = Math.max(m, v.banda(r, a, e, s));
     for (let c = 0; c < 3; c++) m = Math.max(m, v.cor(r, a, e, s, c));
@@ -153,11 +141,10 @@ function quebrar(txt, max) {
   if (at) out.push(at); return out;
 }
 
-function construirSVG(modo) {
-  modo = modo === 'direto' ? 'direto' : 'combinado';
-  const V = valores(modo);
-  const maxV = maximo(modo);
-  const nice = modo === 'combinado' ? Math.ceil(maxV * 2) / 2 : Math.ceil(maxV * 5) / 5;
+function construirSVG() {
+  const V = valores();
+  const maxV = maximo();
+  const nice = Math.ceil(maxV * 2) / 2;
   const k = G.Wp / nice;
   const x0 = G.leftW + 20;
   const xFimPaineis = x0 + 9 * G.pitch - G.colGap;
@@ -177,11 +164,7 @@ function construirSVG(modo) {
   o.push('<rect width="' + largura + '" height="' + altura + '" fill="' + BG + '"/>');
 
   o.push(T(40, 46, 'Desocupação no Brasil, 2016–2024: razão com a taxa nacional por região, escolaridade, faixa etária, cor ou raça e sexo', 22, 700));
-  const sub = modo === 'combinado'
-    ? 'ÍNDICE COMBINADO (modelo): cada barra é o produto das razões de região × escolaridade × sexo × cor ou raça (ou × faixa etária). Supõe independência entre as variáveis; não é taxa observada.'
-    : 'VALORES DIRETOS: cada barra mostra a razão da própria categoria, sem combinar variáveis; por isso as barras se repetem entre as escolaridades de um mesmo painel.';
-  o.push(T(40, 70, sub, 12, 700, modo === 'combinado' ? '#8a4b00' : '#1b5e3a'));
-  o.push(T(40, 88, '1,0× = taxa de desocupação do Brasil no ano (linha tracejada). Esquerda do eixo = Homens, direita = Mulheres, mesma escala em todos os painéis.', 11.5, 400, TXT2));
+  o.push(T(40, 70, '1,0× = taxa de desocupação do Brasil no ano (linha tracejada). Esquerda do eixo = Homens, direita = Mulheres, mesma escala em todos os painéis.', 11.5, 400, TXT2));
 
   // legenda
   let ly = 124;
@@ -268,14 +251,11 @@ function construirSVG(modo) {
         const rt = ptop + G.strip + e * (G.rowH + G.rowGap);
         for (let s = 0; s < 2; s++) {
           const vb = V.banda(r, a, e, s);
-          const fat = modo === 'combinado'
-            ? f2(HEAT.reg[reg][a]) + ' (' + reg + ') × ' + f2(HEAT.esc[e][a]) + ' (' + ESCOLARIDADES[e] + ') × ' + f2(HEAT.sexo[s][a]) + ' (' + SEXOS[s] + ')'
-            : f2(HEAT.esc[e][a]) + ' (' + ESCOLARIDADES[e] + ')';
-          const nota = modo === 'combinado' ? '\nÍndice combinado: estimativa sob independência, não é taxa observada.' : '';
+          const fat = f2(HEAT.reg[reg][a]) + ' (' + reg + ') × ' + f2(HEAT.esc[e][a]) + ' (' + ESCOLARIDADES[e] + ') × ' + f2(HEAT.sexo[s][a]) + ' (' + SEXOS[s] + ')';
           const ctx = reg + ' · ' + ano + ' · ' + ESCOLARIDADES[e] + ' · ' + SEXOS[s];
           const sg = s === 0 ? -1 : 1;
           const baseLen = Math.min(vb, 1) * k;
-          let band = '<g class="obs" data-g="banda"><title>' + esc(ctx + '\nFaixa de escolaridade: ' + f2(vb) + '×' + (modo === 'combinado' ? '\n= ' + fat : '') + nota) + '</title>' +
+          let band = '<g class="obs" data-g="banda"><title>' + esc(ctx + '\nFaixa de escolaridade: ' + f2(vb) + '×\n= ' + fat) + '</title>' +
             '<rect x="' + n1(s === 0 ? cx - baseLen : cx) + '" y="' + n1(rt) + '" width="' + n1(baseLen) + '" height="' + G.rowH + '" fill="' + VERDE + '"/>';
           if (vb > 1) band += '<rect x="' + n1(s === 0 ? cx - vb * k : cx + k) + '" y="' + n1(rt) + '" width="' + n1((vb - 1) * k) + '" height="' + G.rowH + '" fill="' + VERDE_FORTE + '"/>';
           band += '<rect x="' + n1(s === 0 ? cx - vb * k : cx) + '" y="' + n1(rt) + '" width="' + n1(vb * k) + '" height="' + G.rowH + '" fill="none" stroke="' + TXT + '" stroke-width=".9"/></g>';
@@ -283,15 +263,15 @@ function construirSVG(modo) {
           // cor ou raça
           for (let c = 0; c < 3; c++) {
             const v = V.cor(r, a, e, s, c), cn = CORES[c], ext = EXTERNO(cn, a);
-            const fx = modo === 'combinado' ? fat + ' × ' + f2(HEAT.cor[cn][a]) + ' (' + cn + (ext ? ' †' : '') + ')' : f2(HEAT.cor[cn][a]) + ' (' + cn + (ext ? ' †, dado externo' : '') + ')';
+            const fx = fat + ' × ' + f2(HEAT.cor[cn][a]) + ' (' + cn + (ext ? ' †' : '') + ')';
             o.push(barra(s, cx, v * k, rt + 4 + c * 6.6, 5.4, COR_BARRA[cn], cn === 'Branca' ? '#444' : (ext ? '#000' : null),
-              ctx + '\n' + cn + ': ' + f2(v) + '×\n= ' + fx + nota, 'c' + c, ext));
+              ctx + '\n' + cn + ': ' + f2(v) + '×\n= ' + fx, 'c' + c, ext));
           }
           // faixa etária
           for (let f = 0; f < 5; f++) {
             const v = V.faixa(r, a, e, s, f);
-            const fx = modo === 'combinado' ? fat + ' × ' + f2(HEAT.faixa[f][a]) + ' (' + FAIXAS[f] + ')' : f2(HEAT.faixa[f][a]) + ' (' + FAIXAS[f] + ')';
-            o.push(barra(s, cx, v * k, rt + 27 + f * 4.4, 3.6, VERMELHOS[f], '#b23a33', ctx + '\nFaixa etária ' + FAIXAS[f] + ': ' + f2(v) + '×\n= ' + fx + nota, 'f' + f));
+            const fx = fat + ' × ' + f2(HEAT.faixa[f][a]) + ' (' + FAIXAS[f] + ')';
+            o.push(barra(s, cx, v * k, rt + 27 + f * 4.4, 3.6, VERMELHOS[f], '#b23a33', ctx + '\nFaixa etária ' + FAIXAS[f] + ': ' + f2(v) + '×\n= ' + fx, 'f' + f));
           }
         }
       }
@@ -310,9 +290,7 @@ function construirSVG(modo) {
   });
 
   const fy = altura - 56;
-  o.push(T(40, fy, modo === 'combinado'
-    ? 'Passe o mouse sobre uma barra para ver o produto e cada razão usada. Nenhum dado observado de cruzamentos (ex.: mulheres pretas com médio incompleto no Norte) foi usado.'
-    : 'Passe o mouse sobre uma barra para ver a razão original. Neste modo não há combinação entre as variáveis.', 11, 400, TXT2));
+  o.push(T(40, fy, 'Passe o mouse sobre uma barra para ver o produto e cada razão usada.', 11, 400, TXT2));
   o.push('</svg>');
   return { svg: o.join(''), largura, altura, nice };
 }
@@ -327,8 +305,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = API; else 
   'use strict';
   const G = window.GraficoEspelhado;
   const area = document.getElementById('area-grafico');
-  const aviso = document.getElementById('aviso');
-  let modo = 'combinado', resultado = null, zoom = 'fit';
+  let resultado = null, zoom = 'fit';
   const sel = new Set();
 
   const rotCor = ['Branca', 'Parda', 'Preta'];
@@ -363,23 +340,15 @@ if (typeof module !== 'undefined' && module.exports) module.exports = API; else 
   window.addEventListener('resize', () => { if (zoom === 'fit') aplicarZoom(); });
 
   function desenhar() {
-    resultado = G.construirSVG(modo);
+    resultado = G.construirSVG();
     area.innerHTML = resultado.svg;
-    aviso.className = modo; 
-    aviso.innerHTML = modo === 'combinado'
-      ? '<b>Índice combinado (modelo, não é dado observado).</b> Cada barra multiplica as razões (região × escolaridade × sexo × cor ou raça, ou × faixa etária), supondo que as variáveis não interagem. Passe o mouse sobre uma barra para ver as razões usadas. Para ver as razões de cada categoria sem combinar, use “Valores diretos”.'
-      : '<b>Valores diretos.</b> Cada barra mostra a razão da própria categoria, sem combinar variáveis; por isso as barras se repetem entre as escolaridades de um painel.';
-    document.getElementById('m-combinado').setAttribute('aria-pressed', String(modo === 'combinado'));
-    document.getElementById('m-direto').setAttribute('aria-pressed', String(modo === 'direto'));
     aplicarZoom(); destacar();
   }
-  document.getElementById('m-combinado').onclick = () => { modo = 'combinado'; desenhar(); };
-  document.getElementById('m-direto').onclick = () => { modo = 'direto'; desenhar(); };
 
   document.getElementById('b-svg').onclick = () => {
     const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n' + resultado.svg], { type: 'image/svg+xml' });
     const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-    a.download = 'grafico_espelhado_regiao_ano_' + modo + '.svg';
+    a.download = 'grafico_espelhado_regiao_ano_combinado.svg';
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
   };
   document.getElementById('b-pdf').onclick = () => {
